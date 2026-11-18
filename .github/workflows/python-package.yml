@@ -1,0 +1,55 @@
+# Welcome to your Python project!
+import discord
+from discord.ext import commands
+import random
+
+# Setup bot intents
+intents = discord.Intents.default()
+intents.members = True          # Required to read role members
+intents.message_content = True  # Required to read the "!pick_imposter" command
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user.name}")
+
+@bot.command(name="pick_imposter")
+@commands.has_permissions(administrator=True)
+async def pick_imposter(ctx):
+    target_role = "Peak Imposter"
+    
+    # Find the "Peak Imposter" role in the server
+    role = discord.utils.get(ctx.guild.roles, name=target_role)
+    
+    if not role:
+        await ctx.send(f"Could not find a role named **{target_role}**.")
+        return
+
+    # Get all non-bot members with the role
+    eligible_members = [member for member in role.members if not member.bot]
+
+    if not eligible_members:
+        await ctx.send(f"No eligible members found with the **{target_role}** role.")
+        return
+
+    # Randomly pick one member
+    chosen_user = random.choice(eligible_members)
+
+    try:
+        # Privately message the chosen user
+        await chosen_user.send("You have been selected as the **imposter**!")
+        
+        # Confirm in the channel WITHOUT revealing who was picked
+        await ctx.send("An **imposter** has been chosen and notified via DM!")
+        
+    except discord.Forbidden:
+        # Handle cases where the selected user has server DMs turned off
+        await ctx.send(f"I tried to pick someone, but their DMs are closed! Please run the command again or have everyone enable DMs.")
+
+# Replace with your actual bot token
+bot.run("YOUR_BOT_TOKEN")
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest
